@@ -272,6 +272,11 @@
     </div>
 
     <script>
+        // --- KONSTANTY A GLOBÁLNÍ PROMĚNNÉ ---
+
+        /**
+         * Datová struktura obsahující "šťastná" čísla pro každé znamení zvěrokruhu.
+         */
         const zodiacNumbers = {
             beran: [1, 8, 17, 21, 27, 35, 42, 49],
             byk: [2, 6, 11, 18, 29, 34, 38, 47],
@@ -287,12 +292,19 @@
             ryby: [7, 12, 16, 21, 25, 30, 34, 43]
         };
 
+        // Reference na klíčové DOM elementy pro snadnější přístup
         const modeSelector = document.getElementById('generation-mode');
         const zodiacContainer = document.getElementById('zodiac-container');
         const dobContainer = document.getElementById('dob-container');
         const copyBtn = document.getElementById('copy-btn');
         const emailBtn = document.getElementById('email-btn');
 
+        // --- EVENT LISTENERY ---
+
+        /**
+         * Přidá listener na přepínač metod generování.
+         * Zobrazí nebo skryje dodatečné volby (znamení, datum narození) podle výběru.
+         */
         modeSelector.addEventListener('change', (e) => {
             zodiacContainer.style.display = 'none';
             dobContainer.style.display = 'none';
@@ -304,80 +316,9 @@
             }
         });
 
-        function updateNextDrawDate() {
-            const drawInfo = document.getElementById('draw-info');
-            const today = new Date();
-            const currentDay = today.getDay(); // 0 = Neděle, 1 = Pondělí, ..., 6 = Sobota
-            const drawDays = [0, 3, 5]; // Neděle, Středa, Pátek
-
-            let nextDrawDay = drawDays.find(day => day >= currentDay);
-            if (nextDrawDay === undefined) {
-                nextDrawDay = drawDays[0]; // Pokud je po pátku, další je neděle
-            }
-
-            const daysUntilDraw = (nextDrawDay - currentDay + 7) % 7;
-            const nextDrawDate = new Date(today);
-            nextDrawDate.setDate(today.getDate() + daysUntilDraw);
-
-            // Pokud je dnes den losování, ale už je večer (po losování), ukaž další datum
-            if (daysUntilDraw === 0 && today.getHours() >= 20) {
-                const nextIndex = (drawDays.indexOf(currentDay) + 1) % drawDays.length;
-                const nextDay = drawDays[nextIndex];
-                const daysToAdd = (nextDay - currentDay + 7) % 7;
-                nextDrawDate.setDate(today.getDate() + (daysToAdd === 0 ? 7 : daysToAdd));
-            }
-
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            drawInfo.textContent = `Příští losování: ${nextDrawDate.toLocaleDateString('cs-CZ', options)}`;
-        }
-
-        function generateUniqueNumbers(count, min, max, seedNumbers = []) {
-            const numbers = new Set(seedNumbers.filter(n => n >= min && n <= max));
-            while (numbers.size < count) {
-                const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-                numbers.add(randomNumber);
-            }
-            return Array.from(numbers).sort((a, b) => a - b);
-        }
-
-        function getNumbersFromZodiac(zodiacSign) {
-            const luckyNumbers = zodiacNumbers[zodiacSign];
-            const seed = new Set();
-            const seedCount = Math.floor(Math.random() * 2) + 2; // 2 nebo 3
-            while(seed.size < seedCount) {
-                const randomIndex = Math.floor(Math.random() * luckyNumbers.length);
-                seed.add(luckyNumbers[randomIndex]);
-            }
-            return generateUniqueNumbers(6, 1, 49, Array.from(seed));
-        }
-
-        function getNumbersFromDob(dateString) {
-            if (!dateString) return generateUniqueNumbers(6, 1, 49);
-            const date = new Date(dateString);
-            const day = date.getDate();
-            const month = date.getMonth() + 1;
-            const year = date.getFullYear();
-            const seed = new Set();
-            seed.add(day % 49 + 1);
-            seed.add(month % 49 + 1);
-            seed.add((year % 100) % 49 + 1);
-            seed.add((day + month) % 49 + 1);
-            const sumOfDigits = (day + '' + month + '' + year).split('').reduce((sum, digit) => sum + parseInt(digit), 0);
-            seed.add(sumOfDigits % 49 + 1);
-            return generateUniqueNumbers(6, 1, 49, Array.from(seed));
-        }
-
-        function getNumbersAsText() {
-            const columns = document.querySelectorAll('.column-card');
-            let text = 'Moje šťastná čísla Sportka:\n\n';
-            columns.forEach((column, index) => {
-                const title = column.querySelector('.column-title').textContent;
-                const numbers = Array.from(column.querySelectorAll('.number-ball')).map(ball => ball.textContent);
-                text += `${title}: ${numbers.join(', ')}\n`;
-            });
-            return text;
-        }
-
+        /**
+         * Listener pro tlačítko "Kopírovat do schránky".
+         */
         copyBtn.addEventListener('click', () => {
             const textToCopy = getNumbersAsText();
             navigator.clipboard.writeText(textToCopy).then(() => {
@@ -389,6 +330,9 @@
             });
         });
 
+        /**
+         * Listener pro tlačítko "Odeslat e-mailem".
+         */
         emailBtn.addEventListener('click', () => {
             const textForEmail = getNumbersAsText();
             const subject = 'Moje šťastná čísla Sportka';
@@ -396,6 +340,23 @@
             window.location.href = mailtoLink;
         });
 
+        /**
+         * Listener, který se spustí po načtení celého DOMu.
+         * Spustí úvodní funkce.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            updateNextDrawDate();
+            document.getElementById('dob-input').valueAsDate = new Date();
+            generateAllColumns();
+        });
+
+
+        // --- HLAVNÍ FUNKCE ---
+
+        /**
+         * Hlavní funkce, která orchestruje generování všech sloupců.
+         * Přečte nastavení, vymaže staré výsledky a vytvoří nové sloupce.
+         */
         function generateAllColumns() {
             const resultsGrid = document.getElementById('results-grid');
             resultsGrid.innerHTML = '';
@@ -439,14 +400,114 @@
                 columnCard.appendChild(numbersContainer);
                 resultsGrid.appendChild(columnCard);
             }
+            // Po vygenerování zobrazí exportní tlačítka
             document.getElementById('export-buttons').style.display = 'flex';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateNextDrawDate();
-            document.getElementById('dob-input').valueAsDate = new Date();
-            generateAllColumns();
-        });
+        /**
+         * Vypočítá a zobrazí datum příštího losování Sportky.
+         */
+        function updateNextDrawDate() {
+            const drawInfo = document.getElementById('draw-info');
+            const today = new Date();
+            const currentDay = today.getDay(); // 0 = Neděle, 1 = Pondělí, ..., 6 = Sobota
+            const drawDays = [0, 3, 5]; // Neděle, Středa, Pátek
+
+            let nextDrawDay = drawDays.find(day => day >= currentDay);
+            if (nextDrawDay === undefined) {
+                nextDrawDay = drawDays[0]; // Pokud je po pátku, další je neděle
+            }
+
+            const daysUntilDraw = (nextDrawDay - currentDay + 7) % 7;
+            const nextDrawDate = new Date(today);
+            nextDrawDate.setDate(today.getDate() + daysUntilDraw);
+
+            // Pokud je dnes den losování, ale už je večer (po 20:00), ukaž datum dalšího losování
+            if (daysUntilDraw === 0 && today.getHours() >= 20) {
+                const nextIndex = (drawDays.indexOf(currentDay) + 1) % drawDays.length;
+                const nextDay = drawDays[nextIndex];
+                const daysToAdd = (nextDay - currentDay + 7) % 7;
+                nextDrawDate.setDate(today.getDate() + (daysToAdd === 0 ? 7 : daysToAdd));
+            }
+
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            drawInfo.textContent = `Příští losování: ${nextDrawDate.toLocaleDateString('cs-CZ', options)}`;
+        }
+
+        // --- POMOCNÉ FUNKCE PRO GENERÁTORY ---
+
+        /**
+         * Generuje pole unikátních náhodných čísel v daném rozsahu.
+         * @param {number} count - Počet čísel k vygenerování.
+         * @param {number} min - Minimální hodnota čísla.
+         * @param {number} max - Maximální hodnota čísla.
+         * @param {number[]} [seedNumbers=[]] - Pole čísel, která mají být zahrnuta (pokud je to možné).
+         * @returns {number[]} Pole seřazených unikátních čísel.
+         */
+        function generateUniqueNumbers(count, min, max, seedNumbers = []) {
+            const numbers = new Set(seedNumbers.filter(n => n >= min && n <= max));
+            while (numbers.size < count) {
+                const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+                numbers.add(randomNumber);
+            }
+            return Array.from(numbers).sort((a, b) => a - b);
+        }
+
+        /**
+         * Generuje čísla na základě vybraného znamení zvěrokruhu.
+         * @param {string} zodiacSign - Název znamení (např. "beran").
+         * @returns {number[]} Pole 6 šťastných čísel.
+         */
+        function getNumbersFromZodiac(zodiacSign) {
+            const luckyNumbers = zodiacNumbers[zodiacSign];
+            const seed = new Set();
+            // Náhodně vybereme 2-3 čísla ze seznamu šťastných čísel jako základ
+            const seedCount = Math.floor(Math.random() * 2) + 2; // 2 nebo 3
+            while(seed.size < seedCount) {
+                const randomIndex = Math.floor(Math.random() * luckyNumbers.length);
+                seed.add(luckyNumbers[randomIndex]);
+            }
+            return generateUniqueNumbers(6, 1, 49, Array.from(seed));
+        }
+
+        /**
+         * Generuje čísla na základě zadaného data narození.
+         * @param {string} dateString - Datum ve formátu YYYY-MM-DD.
+         * @returns {number[]} Pole 6 šťastných čísel.
+         */
+        function getNumbersFromDob(dateString) {
+            if (!dateString) return generateUniqueNumbers(6, 1, 49);
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            const seed = new Set();
+            // Jednoduchá numerologie pro získání základních čísel
+            seed.add(day % 49 + 1);
+            seed.add(month % 49 + 1);
+            seed.add((year % 100) % 49 + 1);
+            seed.add((day + month) % 49 + 1);
+            const sumOfDigits = (day + '' + month + '' + year).split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+            seed.add(sumOfDigits % 49 + 1);
+            return generateUniqueNumbers(6, 1, 49, Array.from(seed));
+        }
+
+        // --- POMOCNÉ FUNKCE PRO EXPORT ---
+
+        /**
+         * Sestaví textový řetězec ze všech vygenerovaných čísel pro export.
+         * @returns {string} Formátovaný text s čísly.
+         */
+        function getNumbersAsText() {
+            const columns = document.querySelectorAll('.column-card');
+            let text = 'Moje šťastná čísla Sportka:\n\n';
+            columns.forEach((column, index) => {
+                const title = column.querySelector('.column-title').textContent;
+                const numbers = Array.from(column.querySelectorAll('.number-ball')).map(ball => ball.textContent);
+                text += `${title}: ${numbers.join(', ')}\n`;
+            });
+            return text;
+        }
 
     </script>
 
