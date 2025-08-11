@@ -200,11 +200,34 @@
 
         /* Responzivita */
         @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
             .container {
                 padding: 20px;
             }
             h1 {
                 font-size: 2rem;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .container {
+                padding: 15px;
+            }
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            .numbers-container {
+                gap: 8px;
+            }
+            .number-ball {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
             }
         }
 
@@ -309,10 +332,10 @@
             zodiacContainer.style.display = 'none';
             dobContainer.style.display = 'none';
             if (e.target.value === 'zodiac') {
-                zodiacContainer.style.display = 'block';
+                zodiacContainer.style.display = 'flex';
             }
             if (e.target.value === 'dob') {
-                dobContainer.style.display = 'block';
+                dobContainer.style.display = 'flex';
             }
         });
 
