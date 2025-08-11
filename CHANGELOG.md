@@ -1,5 +1,12 @@
 # Historie změn
 
+## [1.1.1] - 2025-08-11
+
+### Opraveno
+
+-   Obnoveno původní barevné schéma po přechodu na Bootstrap.
+-   Opraveno zarovnání čísel uvnitř kuliček.
+
 ## [1.1.0] - 2025-08-11
 
 ### Změněno
