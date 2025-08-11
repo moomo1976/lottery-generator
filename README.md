@@ -28,3 +28,7 @@ Tento projekt je interaktivní webová aplikace pro generování náhodných č�
 - **HTML5:** Pro strukturu stránky.
 - **CSS3:** Pro moderní vzhled, stylování a responzivitu (včetně CSS Grid a Flexbox).
 - **JavaScript (ES6+):** Pro veškerou logiku aplikace, včetně generování čísel a interaktivity.
+
+## Historie změn
+
+Veškeré změny v projektu jsou dokumentovány v souboru [CHANGELOG.md](CHANGELOG.md).
