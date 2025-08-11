@@ -26,7 +26,8 @@ Tento projekt je interaktivní webová aplikace pro generování náhodných č�
 ## Použité technologie
 
 - **HTML5:** Pro strukturu stránky.
-- **CSS3:** Pro moderní vzhled, stylování a responzivitu (včetně CSS Grid a Flexbox).
+- **Bootstrap 5:** Pro kompletní layout, responzivitu a stylování komponent.
+- **CSS3:** Pro drobné vlastní úpravy vzhledu.
 - **JavaScript (ES6+):** Pro veškerou logiku aplikace, včetně generování čísel a interaktivity.
 
 ## Historie změn
