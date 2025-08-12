@@ -173,14 +173,47 @@
 
         copyBtn.addEventListener('click', () => {
             const textToCopy = getNumbersAsText();
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const originalText = copyBtn.textContent;
-                copyBtn.textContent = 'Zkopírováno!';
-                setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
-            }).catch(err => {
-                console.error('Chyba při kopírování: ', err);
-            });
+            fallbackCopyTextToClipboard(textToCopy);
         });
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            // Make the textarea out of sight
+            textArea.style.position = "fixed";
+            textArea.style.top = 0;
+            textArea.style.left = 0;
+            textArea.style.width = "2em";
+            textArea.style.height = "2em";
+            textArea.style.padding = 0;
+            textArea.style.border = "none";
+            textArea.style.outline = "none";
+            textArea.style.boxShadow = "none";
+            textArea.style.background = "transparent";
+            
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                const originalText = copyBtn.textContent;
+                if (successful) {
+                    copyBtn.textContent = 'Zkopírováno!';
+                } else {
+                    copyBtn.textContent = 'Chyba při kopírování';
+                }
+                setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+            } catch (err) {
+                console.error('Chyba při kopírování: ', err);
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Chyba při kopírování';
+                setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+            }
+            
+            document.body.removeChild(textArea);
+        }
 
         emailBtn.addEventListener('click', () => {
             const textForEmail = getNumbersAsText();
@@ -312,7 +345,8 @@
         }
 
         function getNumbersAsText() {
-            const columns = document.querySelectorAll('.card');
+            const resultsGrid = document.getElementById('results-grid');
+            const columns = resultsGrid.querySelectorAll('.col-lg-4');
             let text = 'Moje šťastná čísla Sportka:\n\n';
             columns.forEach((column, index) => {
                 const title = column.querySelector('.card-header').textContent;
